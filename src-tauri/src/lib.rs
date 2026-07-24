@@ -110,6 +110,39 @@ fn enable_hover_mouse_events(window: &tauri::WebviewWindow) {
     }
 }
 
+/// Windows：tauri 的 transparent 窗口底层用 DwmEnableBlurBehindWindow 实现，
+/// 在 Windows 11 上会渲染成磨砂玻璃方块。这里关掉玻璃模糊并给窗口加上
+/// WS_EX_NOREDIRECTIONBITMAP，让 WebView2 的 DirectComposition 输出
+/// 直接按像素 alpha 合成，获得真正的逐像素透明。
+#[cfg(target_os = "windows")]
+fn fix_windows_glass_background(window: &tauri::WebviewWindow) {
+    use windows::Win32::Graphics::Dwm::{DwmEnableBlurBehindWindow, DWM_BLURBEHIND, DWM_BB_ENABLE};
+    use windows::Win32::UI::WindowsAndMessaging::{
+        GetWindowLongPtrW, SetWindowLongPtrW, SetWindowPos, GWL_EXSTYLE, SWP_FRAMECHANGED,
+        SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, WS_EX_NOREDIRECTIONBITMAP,
+    };
+    let Ok(hwnd) = window.hwnd() else { return };
+    unsafe {
+        let bb = DWM_BLURBEHIND {
+            dwFlags: DWM_BB_ENABLE,
+            fEnable: false.into(),
+            ..Default::default()
+        };
+        let _ = DwmEnableBlurBehindWindow(hwnd, &bb);
+        let ex = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+        SetWindowLongPtrW(hwnd, GWL_EXSTYLE, ex | WS_EX_NOREDIRECTIONBITMAP.0 as isize);
+        let _ = SetWindowPos(
+            hwnd,
+            None,
+            0,
+            0,
+            0,
+            0,
+            SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE,
+        );
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -118,6 +151,10 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             if let Some(window) = app.get_webview_window("main") {
                 enable_hover_mouse_events(&window);
+            }
+            #[cfg(target_os = "windows")]
+            if let Some(window) = app.get_webview_window("main") {
+                fix_windows_glass_background(&window);
             }
             Ok(())
         })
