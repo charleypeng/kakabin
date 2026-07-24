@@ -56,13 +56,17 @@ export default function App() {
       showContextMenu().catch(console.error);
     }
     window.addEventListener("contextmenu", onContext);
-    const unlisten = listen<() => void>("menu://empty-trash", () => {
+    const unlisten1 = listen<() => void>("menu://empty-trash", () => {
       bh.current?.evaporate();
       setTimeout(() => emptyTrash().catch((e) => showToast(String(e))), 800);
     });
+    const unlisten2 = listen<string>("menu://about", (event) => {
+      showToast(event.payload);
+    });
     return () => {
       window.removeEventListener("contextmenu", onContext);
-      unlisten.then((f) => f());
+      unlisten1.then((f) => f());
+      unlisten2.then((f) => f());
     };
   }, [showToast]);
 
@@ -133,6 +137,8 @@ export default function App() {
             borderRadius: 8,
             pointerEvents: "none",
             maxWidth: "80%",
+            whiteSpace: "pre-line",
+            textAlign: "center",
           }}
         >
           {toast}

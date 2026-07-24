@@ -80,11 +80,14 @@ fn show_context_menu(window: tauri::WebviewWindow) -> Result<(), String> {
         .enabled(layer_ok)
         .build(&window)
         .map_err(|e| e.to_string())?;
+    let about = MenuItemBuilder::with_id("about", "关于 Kakabin")
+        .build(&window)
+        .map_err(|e| e.to_string())?;
     let quit = MenuItemBuilder::with_id("quit", "退出")
         .build(&window)
         .map_err(|e| e.to_string())?;
     let menu = MenuBuilder::new(&window)
-        .items(&[&open, &empty, &level, &quit])
+        .items(&[&open, &empty, &level, &about, &quit])
         .build()
         .map_err(|e| e.to_string())?;
     window.popup_menu(&menu).map_err(|e| e.to_string())
@@ -138,6 +141,9 @@ pub fn run() {
                         let floating = !FLOATING.load(Ordering::SeqCst);
                         set_level(&window, floating);
                     }
+                }
+                "about" => {
+                    let _ = window.emit("menu://about", "Kakabin v0.1.0\n\nAuthor: Charley Peng\nhttps://github.com/charleypeng/kakabin");
                 }
                 "quit" => app.exit(0),
                 _ => {}
