@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "BlkDustBin",
-  "version": "0.1.0",
-  "identifier": "dev.blkdustbin.app",
+"productName": "Kakabin",
+"version": "1.0.0",
+"identifier": "dev.charleypeng.kakabin",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
