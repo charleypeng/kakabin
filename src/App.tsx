@@ -56,17 +56,13 @@ export default function App() {
       showContextMenu().catch(console.error);
     }
     window.addEventListener("contextmenu", onContext);
-    const unlisten1 = listen<() => void>("menu://empty-trash", () => {
+    const unlisten = listen<() => void>("menu://empty-trash", () => {
       bh.current?.evaporate();
       setTimeout(() => emptyTrash().catch((e) => showToast(String(e))), 800);
     });
-    const unlisten2 = listen<string>("menu://about", (event) => {
-      showToast(event.payload);
-    });
     return () => {
       window.removeEventListener("contextmenu", onContext);
-      unlisten1.then((f) => f());
-      unlisten2.then((f) => f());
+      unlisten.then((f) => f());
     };
   }, [showToast]);
 

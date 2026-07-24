@@ -3,6 +3,7 @@ mod trash_ops;
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::menu::{MenuBuilder, MenuItemBuilder};
 use tauri::{Emitter, Manager};
+use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 
 fn is_desktop_layer_supported() -> bool {
     #[cfg(target_os = "linux")]
@@ -112,6 +113,7 @@ fn enable_hover_mouse_events(window: &tauri::WebviewWindow) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             #[cfg(target_os = "macos")]
             if let Some(window) = app.get_webview_window("main") {
@@ -143,7 +145,11 @@ pub fn run() {
                     }
                 }
                 "about" => {
-                    let _ = window.emit("menu://about", "Kakabin v0.1.0\n\nAuthor: Charley Peng\nhttps://github.com/charleypeng/kakabin");
+                    app.dialog()
+                        .message("Kakabin v0.1.0\n\nAuthor: Charley Peng\nhttps://github.com/charleypeng/kakabin")
+                        .title("About Kakabin")
+                        .kind(MessageDialogKind::Info)
+                        .blocking_show();
                 }
                 "quit" => app.exit(0),
                 _ => {}
