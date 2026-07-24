@@ -4,6 +4,8 @@
 
 基于 [Tauri v2](https://v2.tauri.app/)、React、TypeScript 和 Three.js 构建。
 
+![Kakabin](docs/kakabin.png)
+
 ## 功能
 
 - **拖拽删除** —— 将任意文件/文件夹拖到黑洞上，自动移入系统垃圾桶

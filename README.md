@@ -4,6 +4,8 @@ A desktop black hole — drag files onto it and they disappear into the void (sy
 
 Built with [Tauri v2](https://v2.tauri.app/), React, TypeScript, and Three.js.
 
+![Kakabin](docs/kakabin.png)
+
 ## Features
 
 - **Drag-and-drop trash** — drag any file/folder onto the black hole, it moves to system trash
