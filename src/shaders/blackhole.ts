@@ -72,9 +72,10 @@ vec4 diskSample(float rr, float theta, vec3 rayDir, float t) {
   // 开普勒较差自转 ω ∝ r^-3/2：内圈转得快，湍流图案被自然剪切
   float omega = 1.4 * pow(2.6 / rr, 1.5) * (1.0 + 1.3 * uAgitation);
   float th = theta + t * omega;
-  // 湍流丝状结构（随轨道平流）
-  float n  = fbm(vec2(th * 2.5, rr * 2.2));
-  float n2 = fbm(vec2(th * 6.0 + 13.7, rr * 5.0));
+  // 湍流丝状结构：细切向频率让转动可感知，径向内流项让纹理缓慢漂向视界（吸积感）
+  float inflow = t * 0.22;
+  float n  = fbm(vec2(th * 4.0, rr * 2.2 + inflow));
+  float n2 = fbm(vec2(th * 8.0 + 13.7, rr * 5.0 + inflow * 1.7));
   float fil = clamp(0.45 + 0.75 * n + 0.35 * (n2 - 0.5), 0.0, 1.4);
   // 径向分布：内沿锐利、外沿羽化
   float inner = smoothstep(DISK_IN, DISK_IN + 0.35, rr);
@@ -88,7 +89,9 @@ vec4 diskSample(float rr, float theta, vec3 rayDir, float t) {
   vec3 col = mix(warm, hot, heat * heat);
   col *= mix(vec3(1.0), vec3(0.80, 0.90, 1.15), clamp(dop - 1.0, 0.0, 1.0));
   col *= mix(vec3(1.0), vec3(1.10, 0.75, 0.55), clamp(1.0 - dop, 0.0, 1.0));
-  float bright = (0.55 + 1.45 * heat) * fil * dop * dop;
+  // 细密亮环随内流缓慢移向视界，幅度克制不抢眼
+  float rings = 0.88 + 0.12 * sin(rr * 16.0 + t * 1.8 + n * 4.0);
+  float bright = (0.55 + 1.45 * heat) * fil * rings * dop * dop;
   bright *= 0.8 + 0.5 * uFullness + 0.5 * uAgitation;
   float alpha = clamp(inner * outer * (0.5 + 0.6 * fil), 0.0, 1.0) * (1.0 - uEvaporate);
   return vec4(col * bright * 1.9, alpha);
